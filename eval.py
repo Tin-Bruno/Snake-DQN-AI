@@ -1,8 +1,8 @@
 import time
 
 from agents.dqn_agent import DQNAgent
-from envs.snake_env import SnakeEnv
 from config import MODEL_DIR
+from envs.snake_env import SnakeEnv
 
 
 def main():
@@ -10,20 +10,33 @@ def main():
 
     env = SnakeEnv(render=True)
     agent = DQNAgent()
+
     agent.load(model_path)
     agent.epsilon = 0.0
 
     state = env.reset()
     done = False
 
-    while not done:
-        action = agent.choose_action(state)
-        state, reward, done, info = env.step(action)
-        time.sleep(0.03)
+    print("Modelo carregado:", model_path)
+    print("Avaliando com epsilon = 0.0")
 
-    print(f"Score final: {info['score']}")
+    try:
+        while not done:
+            action = agent.choose_action(state)
 
-    env.close()
+            next_state, reward, done, info = env.step(action)
+
+            state = next_state
+
+            time.sleep(0.03)
+
+        print("Score final:", info["score"])
+
+    except KeyboardInterrupt:
+        print("Avaliação interrompida pelo usuário.")
+
+    finally:
+        env.close()
 
 
 if __name__ == "__main__":

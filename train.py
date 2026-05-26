@@ -1,12 +1,10 @@
-from pathlib import Path
-
 from agents.dqn_agent import DQNAgent
+from config import EPISODES, MODEL_DIR, TARGET_UPDATE_EVERY
 from envs.snake_env import SnakeEnv
-from config import EPISODES, TARGET_UPDATE_EVERY, MODEL_DIR
 
 
 def main():
-    MODEL_DIR.mkdir(exist_ok=True)
+    MODEL_DIR.mkdir(parents=True, exist_ok=True)
 
     env = SnakeEnv(render=False)
     agent = DQNAgent()
@@ -15,9 +13,10 @@ def main():
 
     for episode in range(1, EPISODES + 1):
         state = env.reset()
+
         done = False
-        total_reward = 0
-        loss = None
+        total_reward = 0.0
+        last_loss = None
 
         while not done:
             action = agent.choose_action(state)
@@ -25,14 +24,17 @@ def main():
             next_state, reward, done, info = env.step(action)
 
             agent.memory.push(
-                state,
-                action,
-                reward,
-                next_state,
-                done,
+                state=state,
+                action=action,
+                reward=reward,
+                next_state=next_state,
+                done=done,
             )
 
             loss = agent.train_step()
+
+            if loss is not None:
+                last_loss = loss
 
             state = next_state
             total_reward += reward
@@ -48,8 +50,7 @@ def main():
             best_score = score
             agent.save(MODEL_DIR / "best_snake_dqn.pt")
 
-        if episode % 10 == 0:
-            agent.save(MODEL_DIR / "last_snake_dqn.pt")
+        agent.save(MODEL_DIR / "last_snake_dqn.pt")
 
         print(
             f"Episode={episode} "
@@ -57,7 +58,7 @@ def main():
             f"Best={best_score} "
             f"Reward={total_reward:.3f} "
             f"Epsilon={agent.epsilon:.3f} "
-            f"Loss={loss}"
+            f"Loss={last_loss}"
         )
 
     env.close()
