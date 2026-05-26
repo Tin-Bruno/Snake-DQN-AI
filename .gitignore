@@ -1,0 +1,26 @@
+# Ambiente virtual
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# VS Code
+.vscode/
+
+# Modelos treinados
+saved_models/*.pt
+saved_models/*.pth
+saved_models/*.zip
+
+# Logs e gráficos
+logs/
+runs/
+*.log
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
